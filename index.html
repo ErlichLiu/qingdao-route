@@ -769,6 +769,27 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .pop .p-meta{font-size:11.5px; color:#8a8073; margin-bottom:6px}
   .pop p{margin:0; font-size:12.5px; line-height:1.7; color:#3d352c}
   .pop .tag{display:inline-block; font-size:11px; padding:2px 7px; border-radius:999px; margin:0 5px 5px 0; background:#f0ece4; color:#6b6157}
+
+  /* ---------- 天气窗口 ---------- */
+  .wx-verdict{
+    font-size:12px; line-height:1.8; background:#fff7e8; border:1px solid #f0e0c2; border-radius:10px;
+    padding:11px 13px; color:#6b4a1f;
+  }
+  .wx-verdict b{color:#b8452f}
+  .wx-strip{display:flex; gap:6px; overflow-x:auto; padding:10px 2px 4px; -webkit-overflow-scrolling:touch}
+  .wx-strip::-webkit-scrollbar{height:4px}
+  .wx-strip::-webkit-scrollbar-thumb{background:#e0d7c8; border-radius:2px}
+  .wx-day{
+    flex:0 0 62px; text-align:center; border:1px solid var(--line); border-radius:9px;
+    padding:7px 4px 8px; background:#fff;
+  }
+  .wx-day.best{border-color:#d1452c; box-shadow:0 0 0 1.5px rgba(209,69,44,.22); background:#fff5f2}
+  .wx-day .d{font-size:10.5px; color:var(--muted)}
+  .wx-day .ic{font-size:15px; line-height:1.6; margin:1px 0}
+  .wx-day .t{font-size:11px; font-weight:700; color:#3d352c}
+  .wx-day .s{font-size:9.5px; color:#9a9086; margin-top:1px}
+  .wx-note{font-size:11.5px; line-height:1.8; color:#6b6157; margin-top:8px}
+  .wx-note b{color:#8a4a2f}
   /* ---------- 手机 / 窄屏 ---------- */
   @media (max-width:900px){
     html,body{height:auto; min-height:100%}
@@ -813,6 +834,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <label class="chip" data-key="B"><input type="checkbox" checked><span class="dot" style="background:var(--routeB)"></span>路线 B 海岸线</label>
     <label class="chip" data-key="C"><input type="checkbox" checked><span class="dot" style="background:var(--coffee)"></span>咖啡 · 星巴克/M Stand</label>
     <label class="chip" data-key="H"><input type="checkbox" checked><span class="dot" style="background:var(--hotel)"></span>住宿 · 亚朵/城际</label>
+  </div>
+
+  <h2>天气窗口 <span class="route-tag">青岛 · 未来 16 天</span></h2>
+  <div class="wx-verdict">
+    <b>11/21 周六 — 11/22 周日</b>：两天连晴、日照 9.7 小时，最高 6℃→13℃，是这段时间最稳的组合；
+    时间宽裕的话，<b>11/19 — 11/27</b> 几乎是连续 9 天晴好，随便挑两天都成立。<br>
+    未来 16 天<b>没有降雪</b>；青岛的雪集中在 12 月下旬—2 月，且要撞上冷空气才有。
+  </div>
+  <div class="wx-strip" id="wxStrip"></div>
+  <div class="wx-note">
+    <b>拍照时间：</b>11 月下旬日落约 <b>16:45</b>、日出 06:40。所以路线 A 的小鱼山那段别按 17:00 走，
+    <b>16:15 前</b>上到观景台；路线 B 的奥帆中心 16:30 到位刚好接住日落。<br>
+    <b>穿着：</b>这几天早间 0–4℃、海边风力 20–33 km/h，体感比气温低 3–5℃，防风外套比羽绒更管用。
   </div>
 
   <h2>路线 A · 老城德式建筑 <span class="route-tag">步行约 6.5 km</span></h2>
@@ -982,6 +1016,50 @@ function wgs2gcj(lat, lng){
   return [lat + dLat, lng + dLng];
 }
 function gcjLatLng(o){ const g = wgs2gcj(o.lat, o.lng); return L.latLng(g[0], g[1]); }
+
+
+/* ================= 天气窗口（Open-Meteo，2026-11-16 取数） ================= */
+const weather = [
+  {date:'11/16', md:'11-16', wd:'周一', kind:'haze', label:'雾/阴', tmax:12.8, tmin:6.4, sunh:6.2, wind:16, pprob:0, sunrise:'06:35', sunset:'16:50', weekend:false},
+  {date:'11/17', md:'11-17', wd:'周二', kind:'cloud', label:'多云', tmax:12.1, tmin:6.2, sunh:3.8, wind:20, pprob:20, sunrise:'06:36', sunset:'16:49', weekend:false},
+  {date:'11/18', md:'11-18', wd:'周三', kind:'mostly', label:'晴间多云', tmax:9.1, tmin:4.0, sunh:8.7, wind:33, pprob:41, sunrise:'06:37', sunset:'16:49', weekend:false},
+  {date:'11/19', md:'11-19', wd:'周四', kind:'mostly', label:'晴间多云', tmax:9.0, tmin:3.2, sunh:9.7, wind:29, pprob:2, sunrise:'06:38', sunset:'16:48', weekend:false},
+  {date:'11/20', md:'11-20', wd:'周五', kind:'sun', label:'晴', tmax:7.8, tmin:1.8, sunh:9.7, wind:28, pprob:0, sunrise:'06:39', sunset:'16:48', weekend:false},
+  {date:'11/21', md:'11-21', wd:'周六', kind:'mostly', label:'晴间多云', tmax:6.0, tmin:0.1, sunh:9.5, wind:20, pprob:0, sunrise:'06:40', sunset:'16:47', weekend:true},
+  {date:'11/22', md:'11-22', wd:'周日', kind:'haze', label:'雾/阴', tmax:12.8, tmin:-0.2, sunh:9.7, wind:22, pprob:1, sunrise:'06:41', sunset:'16:47', weekend:true},
+  {date:'11/23', md:'11-23', wd:'周一', kind:'mostly', label:'晴间多云', tmax:13.9, tmin:9.5, sunh:9.7, wind:26, pprob:2, sunrise:'06:42', sunset:'16:46', weekend:false},
+  {date:'11/24', md:'11-24', wd:'周二', kind:'mostly', label:'晴间多云', tmax:13.7, tmin:3.5, sunh:9.7, wind:27, pprob:6, sunrise:'06:43', sunset:'16:46', weekend:false},
+  {date:'11/25', md:'11-25', wd:'周三', kind:'mostly', label:'晴间多云', tmax:10.0, tmin:1.9, sunh:9.7, wind:13, pprob:6, sunrise:'06:44', sunset:'16:45', weekend:false},
+  {date:'11/26', md:'11-26', wd:'周四', kind:'mostly', label:'晴间多云', tmax:12.3, tmin:4.1, sunh:9.7, wind:15, pprob:8, sunrise:'06:45', sunset:'16:45', weekend:false},
+  {date:'11/27', md:'11-27', wd:'周五', kind:'sun', label:'晴', tmax:12.2, tmin:1.3, sunh:9.7, wind:19, pprob:8, sunrise:'06:46', sunset:'16:45', weekend:false},
+  {date:'11/28', md:'11-28', wd:'周六', kind:'rain', label:'雨', tmax:14.7, tmin:7.8, sunh:0.7, wind:25, pprob:4, sunrise:'06:47', sunset:'16:45', weekend:true},
+  {date:'11/29', md:'11-29', wd:'周日', kind:'cloud', label:'多云', tmax:11.7, tmin:2.1, sunh:9.7, wind:29, pprob:10, sunrise:'06:48', sunset:'16:44', weekend:true},
+  {date:'11/30', md:'11-30', wd:'周一', kind:'sun', label:'晴', tmax:11.3, tmin:1.0, sunh:9.7, wind:24, pprob:16, sunrise:'06:49', sunset:'16:44', weekend:false},
+  {date:'12/1', md:'12-01', wd:'周二', kind:'cloud', label:'多云', tmax:15.3, tmin:10.7, sunh:9.1, wind:15, pprob:11, sunrise:'06:50', sunset:'16:44', weekend:false}
+];
+const WX_ICON = {sun:'☀️', mostly:'🌤️', cloud:'☁️', haze:'🌫️', rain:'🌦️', snow:'❄️'};
+const WX_BEST = ['11-21','11-22'];
+(function renderWeather(){
+  const strip = document.getElementById('wxStrip');
+  if (!strip) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  weather.forEach(d => {
+    const [m, dd] = d.md.split('-').map(Number);
+    const dt = new Date(today.getFullYear(), m-1, dd);
+    if (dt < today) return;
+    const el = document.createElement('div');
+    el.className = 'wx-day' + (WX_BEST.includes(d.md) ? ' best' : '');
+    el.title = `${d.wd} ${d.date} ${d.label}｜${d.tmax}/${d.tmin}℃｜日照 ${d.sunh}h｜降水概率 ${d.pprob}%`;
+    el.innerHTML = `<div class="d">${d.date} ${d.wd.slice(1)}</div>
+      <div class="ic">${WX_ICON[d.kind] || '·'}</div>
+      <div class="t">${Math.round(d.tmax)}°<span style="color:#9a9086;font-weight:400">/${Math.round(d.tmin)}°</span></div>
+      <div class="s">${WX_BEST.includes(d.md) ? '★ ' : ''}${d.sunh}h</div>`;
+    strip.appendChild(el);
+  });
+  // 默认把第一个推荐日滚进视野
+  const firstBest = strip.querySelector('.wx-day.best');
+  if (firstBest) strip.scrollLeft = Math.max(0, firstBest.offsetLeft - 6);
+})();
 
 /* ================= 地图 ================= */
 const map = L.map('map', {zoomControl:false, scrollWheelZoom:true}).setView([36.0605,120.3350], 14);
