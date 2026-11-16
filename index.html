@@ -960,21 +960,27 @@ const mstand = [
 ];
 
 const atour = [
-  {n:"青岛栈桥中山路亚朵酒店", lat:36.07050, lng:120.31260, a:"市南区中山路 149 号",
+  {n:"青岛栈桥中山路亚朵酒店", lat:36.071548, lng:120.319066, cs:"gcj", r:"4.6",
+   a:"市南区中山路 149 号（中山路地铁站 D 口 110 m）",
    d:"就在中山路步行街入口、劈柴院对面，步行 5 分钟到天主教堂、15 分钟到栈桥。走路线 A 最省力的住处。"},
-  {n:"亚朵 S 酒店（香港西路店）", lat:36.05958, lng:120.36701, a:"市南区香港西路（湛山一带）",
-   d:"夹在老城与东部海岸之间，去八大关和五四广场都近，适合两天都想沿海走的人。"},
-  {n:"亚朵酒店（五四广场市政府店）", lat:36.06470, lng:120.37480, a:"市南区香港中路 18 号",
+  {n:"青岛栈桥海景亚朵酒店", lat:36.055771, lng:120.309204, cs:"gcj", r:"4.4",
+   a:"市南区西陵峡路 1 号",
+   d:"栈桥西侧的海景店，开窗就是青岛湾，适合清早拍栈桥、避开中山路人流。"},
+  {n:"亚朵酒店（五四广场市政府店）", lat:36.065394, lng:120.384170, cs:"gcj", r:"4.5",
+   a:"市南区香港中路 18 号（五四广场地铁站 C 口 410 m）",
    d:"紧邻市政府与五四广场，楼下就是星巴克集群，走路线 B 的收尾段非常方便。"},
-  {n:"青岛五四广场香港中路亚朵酒店", lat:36.06465, lng:120.39020, a:"市南区福州南路 6 号 3 栋",
+  {n:"青岛五四广场香港中路亚朵酒店", lat:36.066409, lng:120.394958, cs:"gcj", r:"4.5",
+   a:"市南区福州南路 6 号",
    d:"香港中路核心段，往奥帆中心、燕儿岛步行可达，夜跑海边的首选。"},
-  {n:"亚朵酒店（五四广场麦凯乐店）", lat:36.06540, lng:120.39320, a:"市南区香港中路 108 号",
+  {n:"青岛五四广场麦凯乐亚朵酒店", lat:36.065295, lng:120.407607, cs:"gcj", r:"4.5",
+   a:"市南区香港中路 108 号（高雄路地铁 C 口西 50 m）",
    d:"麦凯乐美食街对面，吃饭方便；南侧临海，出门就能看海岸线。"}
 ];
 
 const intercity = [
-  {n:"青岛五四广场万象城城际酒店", lat:36.07085, lng:120.36602, a:"市南区江西路 11 号（海信探索中心园区）",
-   d:"2026 年新开，隔壁就是万象城，步行可到五四广场看灯光秀，地铁芝泉路站约 400 m。德式包豪斯底子，和你喜欢的建筑调性一致。"}
+  {n:"青岛五四广场城际酒店", lat:36.071216, lng:120.370358, cs:"gcj", r:"4.7",
+   a:"市南区江西路 11 号（海信探索中心园区内）",
+   d:"2026 年新开，隔壁就是万象城，步行可到五四广场看灯光秀，芝泉路地铁站约 400 m。德式包豪斯底子，和你喜欢的建筑调性一致。"}
 ];
 
 /* 统一的咖啡 / 住宿列表（带品牌与配色） */
@@ -1015,7 +1021,10 @@ function wgs2gcj(lat, lng){
   dLng = (dLng * 180) / (AA / sqrtMagic * Math.cos(radLat) * PI);
   return [lat + dLat, lng + dLng];
 }
-function gcjLatLng(o){ const g = wgs2gcj(o.lat, o.lng); return L.latLng(g[0], g[1]); }
+function gcjLatLng(o){
+  if (o.cs === 'gcj') return L.latLng(o.lat, o.lng);   // 高德 POI 已是 GCJ-02，直接使用
+  const g = wgs2gcj(o.lat, o.lng); return L.latLng(g[0], g[1]);
+}
 
 
 /* ================= 天气窗口（Open-Meteo，2026-11-16 取数） ================= */
@@ -1138,7 +1147,7 @@ coffees.forEach(c => {
 stays.forEach(h => {
   const ll = gcjLatLng(h);
   const m = L.marker(ll, {icon: pinIcon(h.mark, h.color, false), riseOnHover:true}).addTo(groups.H);
-  m.bindPopup(`<div class="pop"><h3>${h.n}</h3><div class="p-meta">${h.a}</div><p>${h.d}</p></div>`);
+  m.bindPopup(`<div class="pop"><h3>${h.n}</h3><div class="p-meta">${h.a}${h.r?' · ★'+h.r:''}</div><p>${h.d}</p></div>`);
   m.bindTooltip(h.n, {permanent:true, direction:'right', offset:[13,0], className:'stop-label', opacity:1});
   h._marker = m;
 });
